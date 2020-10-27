@@ -1,14 +1,13 @@
-let developers = []; //local state to track developers
-const csrftoken = document.querySelector("[name=csrfmiddlewaretoken]").value; // get csrftoken from DOM
+let projects = []; //local state to track projects
 
-//handles updating the local developer state object
-async function updateDevelopers() {
+//handles updating the local project state object
+async function updateProjects() {
   await $.ajax({
     type: "GET",
-    url: "/api/developers/",
+    url: "/api/projects/",
     dataType: "json",
     success: function (response) {
-      developers = response.developers;
+      projects = response.projects;
     },
     error: function (err) {
       console.log("err: ", err);
@@ -16,48 +15,44 @@ async function updateDevelopers() {
   });
 }
 
-//handles rendering the table that displays all developer elements in the database
-function updateDevTable() {
+//handles rendering the table that displays all project elements in the database
+function updateProjectsTable() {
   $("#main-container").empty(); // clear current main content
   let content = "<table>"; // init content to render
-  for (i = 0; i < developers.length; i++) {
+  for (i = 0; i < projects.length; i++) {
     content +=
-      '<tr><td><button type="button" class="btn btn-dark tbl-btn" onclick="fetchSingleDeveloper(' +
+      '<tr><td><button type="button" class="btn btn-dark tbl-btn" onclick="fetchSingleProject(' +
       i +
       ')">' +
-      developers[i].name +
+      projects[i].title +
       "</button></td></tr>"; // generate table
   }
   content += "</table>";
   $("#main-container").append(content); // append content to main container
 }
 
-// handles the rendering of a form to edit/delete a single developer
-function fetchSingleDeveloper(i) {
+// handles the rendering of a form to edit/delete a single project
+function fetchSingleProject(i) {
   $("#main-container").empty(); // clear current main content
   $form = $("<form></form>");
   $form.append(
-    '<input type="hidden" name="id" value="' + developers[i].id + '">'
+    '<input type="hidden" name="id" value="' + projects[i].id + '">'
   );
   $form.append(
-    '<div class="form-group"><label for="name">Name</label><input name="name" type="text" class="form-control" value="' +
-      developers[i].name +
+    '<div class="form-group"><label for="title">Name</label><input name="title" type="text" class="form-control" value="' +
+      projects[i].title +
       '" required></div>'
   );
+  //TODO render developers
   $form.append(
-    '<div class="form-group"><label for="bio">Bio</label><textarea name="bio" class="form-control" required>' +
-      developers[i].bio +
-      "</textarea></div>"
+    '<div class="form-group"><label for="budget">Budget</label><input name="budget" type="number" class="form-control" value="' +
+      projects[i].budget +
+      '" min="0" step="0.01" max="1000000" required></div>'
   );
   $form.append(
-    '<div class="form-group"><label for="price">Price</label><input name="price" type="number" class="form-control" value="' +
-      developers[i].price +
-      '" min="0" step="0.01" max="200" required></div>'
-  );
-  $form.append(
-    '<div class="form-group form-btns"><button name="delete"  class="btn btn-dark" onclick="deleteDeveloper(' +
+    '<div class="form-group form-btns"><button name="delete"  class="btn btn-dark" onclick="deleteProject(' +
       i +
-      ')">Delete</button><button name="update"   class="btn btn-dark" onclick="updateDeveloper(' +
+      ')">Delete</button><button name="update"   class="btn btn-dark" onclick="updateProject(' +
       i +
       ')">Update</button></div>'
   );
@@ -68,30 +63,30 @@ function fetchSingleDeveloper(i) {
   $("#main-container").append($form); // appends content to main container
 }
 
-// handles the AJAX request for deleting a developer
-async function deleteDeveloper(i) {
+// handles the AJAX request for deleting a project
+async function deleteProject(i) {
   if (
     confirm(
-      "Are you sure you wish to delete this developer? This action is irreversible."
+      "Are you sure you wish to delete this project? This action is irreversible."
     )
   ) {
-    const request = new Request("/api/developers/" + developers[i].id + "/", {
+    const request = new Request("/api/projects/" + projects[i].id + "/", {
       headers: { "X-CSRFToken": csrftoken },
     });
     fetch(request, {
       method: "DELETE",
       mode: "same-origin",
     }).then(async function (response) {
-      alert("Developer deleted.");
-      await updateDevelopers(); // update developers state
+      alert("Project deleted.");
+      await updateProjects(); // update projects state
       $("#main-container").empty(); // clear current main content
-      updateDevTable();
+      updateProjectsTable();
     });
   }
 }
 
-// handles the AJAX request for updating a developer
-async function updateDeveloper(i) {
+// handles the AJAX request for updating a project
+async function updateProject(i) {
   let form_data = $("form").serializeArray();
   if (
     form_data[1].value == "" ||
@@ -110,10 +105,10 @@ async function updateDeveloper(i) {
   };
   if (
     confirm(
-      "Are you sure you wish to update this developer? This action is irreversible."
+      "Are you sure you wish to update this project? This action is irreversible."
     )
   ) {
-    const request = new Request("/api/developers/" + developers[i].id + "/", {
+    const request = new Request("/api/projects/" + projects[i].id + "/", {
       // generate fetch request
       headers: {
         "X-CSRFToken": csrftoken,
@@ -126,16 +121,16 @@ async function updateDeveloper(i) {
       mode: "same-origin",
       body: JSON.stringify(data),
     }).then(async function (response) {
-      alert("Developer updated.");
-      await updateDevelopers(); // update developers state
+      alert("Project updated.");
+      await updateProjects(); // update projects state
       $("#main-container").empty(); // clear current main content
-      fetchSingleDeveloper(i); // rerender edited developer screen
+      fetchSingleProject(i); // rerender edited project screen
     });
   }
 }
 
-// handles the AJAX request for adding a new developer
-function addDeveloper() {
+// handles the AJAX request for adding a new project
+function addProject() {
   let form_data = $("form").serializeArray();
   if (
     form_data[1].value == "" ||
@@ -151,8 +146,8 @@ function addDeveloper() {
     bio: form_data[1].value,
     price: form_data[2].value,
   };
-  if (confirm("Are you sure you wish to add this developer?")) {
-    const request = new Request("/api/developers/", {
+  if (confirm("Are you sure you wish to add this project?")) {
+    const request = new Request("/api/projects/", {
       // generate fetch request
       headers: {
         "X-CSRFToken": csrftoken,
@@ -165,24 +160,24 @@ function addDeveloper() {
       mode: "same-origin",
       body: JSON.stringify(data),
     }).then(async function (response) {
-      alert("Developer added.");
-      await updateDevelopers(); // update developers state
+      alert("Project added.");
+      await updateProjects(); // update projects state
       $("#main-container").empty(); // clear current main content
-      updateDevTable(); // rerender developer table
+      updateProjectsTable(); // rerender project table
     });
   }
 }
 
-// event listener for the fetch developers button
-$("#fetch_dev_btn").click(async function (e) {
-  await updateDevelopers(); // update developers state
-  updateDevTable(); // render developer table
+// event listener for the fetch projects button
+$("#fetch_proj_btn").click(async function (e) {
+  await updateProjects(); // update projects state
+  updateProjectsTable(); // render project table
 });
 
-// event listener for the add developer button
-$("#add_dev_btn").click(async function (e) {
+// event listener for the add project button
+$("#add_proj_btn").click(async function (e) {
   $("#main-container").empty(); // clear current main content
-  $form = $("<form></form>"); // construct add developer form
+  $form = $("<form></form>"); // construct add project form
   $form.append(
     '<div class="form-group"><label for="name">Name</label><input name="name" type="text" class="form-control" required></div>'
   );
@@ -193,7 +188,7 @@ $("#add_dev_btn").click(async function (e) {
     '<div class="form-group"><label for="price">Price</label><input name="price" type="number" class="form-control" min="0" step="0.01" max="200" required></div>'
   );
   $form.append(
-    '<div class="form-group form-btns"><button name="delete"  class="btn btn-dark" onclick="addDeveloper()">Add</button></div>'
+    '<div class="form-group form-btns"><button name="delete"  class="btn btn-dark" onclick="addProject()">Add</button></div>'
   );
   $form.submit(function (e) {
     // prevent form default action
