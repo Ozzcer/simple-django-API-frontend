@@ -4,7 +4,9 @@ from django.shortcuts import get_object_or_404
 from .models import Developer, Project
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt  # TODO remove
+from django.db import IntegrityError
 import json
+import logging
 
 
 @method_decorator(csrf_exempt, name='dispatch')  # TODO remove
@@ -55,6 +57,11 @@ class DeveloperUpdateDeleteView(View):
         except TypeError as ex:
             return JsonResponse({"message": "Project not updated"}, status=400)
 
+    def delete(self, request, developer_id):
+        d = get_object_or_404(Developer, pk=developer_id)
+        d.delete()
+        return JsonResponse({"message": "Developer deleted"})
+
 
 @method_decorator(csrf_exempt, name='dispatch')  # TODO remove
 class ProjectView(View):
@@ -97,6 +104,8 @@ class ProjectView(View):
 
         except TypeError as ex:  # catch if developers object is wrong
             return JsonResponse({"message": "Developers not added"}, status=400)
+        except IntegrityError as ex:
+            return JsonResponse({"message": "Developer not added, developer does not exist"}, status=400)
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -113,3 +122,10 @@ class ProjectUpdateDeleteView(View):
 
         except TypeError as ex:
             return JsonResponse({"message": "Project not updated"}, status=400)
+        except IntegrityError as ex:
+            return JsonResponse({"message": "Project not updated, developer does not exist"}, status=400)
+
+    def delete(self, request, project_id):
+        p = get_object_or_404(Project, pk=project_id)
+        p.delete()
+        return JsonResponse({"message": "project deleted"})

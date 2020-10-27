@@ -1,0 +1,34 @@
+html, body {
+    background-color: #1B1E1F;
+}
+
+h1 {
+    background-color: #1B1E1F;
+    color: whitesmoke;
+}
+
+p{
+    color: whitesmoke;
+}
+
+table{
+    width: 100%;
+    align-content: center;
+}
+
+.tbl-btn{
+    width: 100%;
+}
+
+label{
+    color: whitesmoke;
+}
+
+button {
+    width: 45%;
+}
+.form-btns{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
