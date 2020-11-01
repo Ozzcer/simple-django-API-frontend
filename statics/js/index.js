@@ -206,7 +206,7 @@ $("#add_dev_btn").click(async function (e) {
     '<div class="form-group"><label for="price">Price</label><input name="price" type="number" class="form-control" min="0" step="0.01" max="200" required></div>'
   );
   $form.append(
-    '<div class="form-group form-btns"><button name="delete"  class="btn btn-dark" onclick="addDeveloper()">Add</button></div>'
+    '<div class="form-group form-btns"><button name="add"  class="btn btn-dark" onclick="addDeveloper()">Add</button></div>'
   );
   $form.submit(function (e) {
     // prevent form default action
@@ -385,20 +385,22 @@ async function updateProject(index) {
 // handles the AJAX request for adding a new project
 function addProject() {
   let form_data = $("form").serializeArray();
-  if (
-    form_data[1].value == "" ||
-    form_data[2].value == "" ||
-    form_data[3] < 0 ||
-    form_data[3] > 200
-  ) {
+  if (form_data[1].value == "" || form_data[2].value == "") {
     // form validation as default form submit actions are prevented
     return;
   }
+  let projectDevelopers = []; // construct developers JSON array
+  for (i = 2; i < form_data.length - 1; i++) {
+    projectDevelopers.push(form_data[i].value);
+  }
   let data = {
-    name: form_data[0].value,
-    bio: form_data[1].value,
-    price: form_data[2].value,
+    // construct JSON data
+    id: form_data[0].value,
+    title: form_data[1].value,
+    developers: projectDevelopers,
+    budget: form_data[form_data.length - 1].value,
   };
+
   if (confirm("Are you sure you wish to add this project?")) {
     const request = new Request("/api/projects/", {
       // generate fetch request
@@ -429,22 +431,40 @@ $("#fetch_proj_btn").click(async function (e) {
 
 // event listener for the add project button
 $("#add_proj_btn").click(async function (e) {
-  $("#main-container").empty(); // clear current main content
-  $form = $("<form></form>"); // construct add project form
+  $("#main-container").empty(); // clear current main content  
+  $form = $("<form></form>");
+  $form.append('<input type="hidden" name="id">');
   $form.append(
-    '<div class="form-group"><label for="name">Name</label><input name="name" type="text" class="form-control" required></div>'
+    '<div class="form-group"><label for="title">Title</label><input name="title" type="text" class="form-control" required></div>'
+  );
+  if (developers.length > 0) {
+    // construct developers view
+    let html =
+      '<div class="form-group"><label for="developers">Developers</label><select name="developers" class="form-control" multiple>';
+    for (let i = 0; i < developers.length; i++) {
+      // loop through all developers
+      html +=
+        '<option value="' +
+        developers[i].id +
+        '">' +
+        developers[i].name +
+        "</option>";
+    }
+    html += "</select></div>";
+    $form.append(html);
+  } else {
+    $form.append(
+      '<div class="form-group"><label for="developers">Developers</label><p>No developers</p></div>'
+    );
+  }
+  $form.append(
+    '<div class="form-group"><label for="budget">Budget</label><input name="budget" type="number" class="form-control" min="0" step="0.01" max="1000000" required></div>'
   );
   $form.append(
-    '<div class="form-group"><label for="bio">Bio</label><textarea name="bio" class="form-control" required></textarea></div>'
-  );
-  $form.append(
-    '<div class="form-group"><label for="price">Price</label><input name="price" type="number" class="form-control" min="0" step="0.01" max="200" required></div>'
-  );
-  $form.append(
-    '<div class="form-group form-btns"><button name="delete"  class="btn btn-dark" onclick="addProject()">Add</button></div>'
+    '<div class="form-group form-btns"><button name="add"  class="btn btn-dark" onclick="addProject()">Add</button></div>'
   );
   $form.submit(function (e) {
-    // prevent form default action
+    // prevents standard form redirect action
     return false;
   });
   $("#main-container").append($form); // render form
