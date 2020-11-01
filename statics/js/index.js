@@ -263,15 +263,17 @@ function fetchSingleProject(index) {
       '" required></div>'
   );
   if (developers.length > 0) {
+    // construct developers view
     let html =
       '<div class="form-group"><label for="developers">Developers</label><select name="developers" class="form-control" multiple>';
-    for (let i = 0; i < developers.length; i++) {
-      let selected = false;
-      for (let a = 0; a < projects[index].developers.length; a++) {
-        if (projects[index].developers[a].id === developers[i].id) {
-          selected = true;
+    for (let i = 0; i < developers.length; i++) { // loop through all developers 
+      let selected = false; 
+      for (let a = 0; a < projects[index].developers.length; a++) { // loop through all developers on this project
+        if (projects[index].developers[a].id === developers[i].id) { // if the top loop developer is on this project
+          selected = true; // flags that this developer should begin selected
         }
       }
+      //construct select option
       if (selected) {
         html +=
           '<option value="' +
@@ -343,11 +345,11 @@ async function updateProject(index) {
     // form validation as default form submit actions are prevented
     return;
   }
-  let projectDevelopers = [];
+  let projectDevelopers = []; // construct developers JSON array
   for (i = 2; i < form_data.length - 1; i++) {
     projectDevelopers.push(form_data[i].value);
   }
-  let data = {
+  let data = { // construct JSON data
     id: form_data[0].value,
     title: form_data[1].value,
     developers: projectDevelopers,
